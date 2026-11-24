@@ -1,14 +1,15 @@
 import { mountRelay } from './handoff.mjs';
+import { drawer, menuButton, onOpen } from './native-ui.mjs';
+
 jQuery(() => {
-    const panel = document.createElement('details');
-    panel.innerHTML = '<summary>其他传输方式（局域网 / 文件）</summary>';
-    const relayPanel = document.createElement('details');
-    document.querySelector('#extensions_settings').append(relayPanel, panel);
-    mountRelay(relayPanel);
+    const relayView = drawer(document.querySelector('#extensions_settings'), '聊天接力');
+    mountRelay(relayView);
+    const otherView = drawer(relayView.content, '其他传输方式');
+    const panel = otherView.content;
     const status = document.createElement('p');
     status.setAttribute('role', 'status');
     const body = document.createElement('div');
-    body.style.cssText = 'display:grid;gap:.55em;padding:.5em 0;min-width:0';
+    body.className = 'flex-container flexFlowColumn';
     panel.append(status, body);
     let currentPeer, revision = 0;
     const context = () => SillyTavern.getContext();
@@ -23,20 +24,11 @@ jQuery(() => {
         if (!res.ok) throw Error(result.error || '连接失败');
         return result;
     }
-    function section(parent, title) {
-        const box = document.createElement('details');
-        const summary = document.createElement('summary');
-        summary.textContent = title;
-        box.append(summary);
-        parent.append(box);
-        return box;
+    function section(parent, title, expanded = false) {
+        return drawer(parent, title, expanded).content;
     }
     function action(parent, title, run) {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'menu_button';
-        button.style.cssText = 'width:auto;max-width:100%;margin:.25em 0';
-        button.textContent = title;
+        const button = menuButton(title);
         parent.append(button);
         button.onclick = async () => {
             button.disabled = true;
@@ -50,8 +42,8 @@ jQuery(() => {
     function field(parent, title, tag) {
         const row = document.createElement('label');
         const el = document.createElement(tag);
-        row.style.display = 'block';
-        el.style.cssText = 'display:block;width:100%;min-width:0';
+        row.className = 'flex-container flexFlowColumn';
+        if (tag === 'input') el.className = 'text_pole';
         row.append(title, el);
         parent.append(row);
         return el;
@@ -84,7 +76,8 @@ jQuery(() => {
         action(join, '配对', async () => {
             const parts = invite.value.trim().split(/\s+/);
             const address = addr.value.trim() || (parts.length === 2 ? parts[0] : '');
-            if (!address) { manual.open = true; throw Error('请填写对方地址，或粘贴带地址的完整邀请。'); }
+            if (!address) { const header = manual.previousElementSibling;
+                if (header.getAttribute('aria-expanded') !== 'true') header.click(); throw Error('请填写对方地址，或粘贴带地址的完整邀请。'); }
             const [ip, port = '47321'] = address.split(':');
             await api('pair', { ip, port: Number(port), code: parts.at(-1) });
             await refresh();
@@ -123,8 +116,7 @@ jQuery(() => {
         });
     }
     function receive(state) {
-        const box = section(body, '待接收聊天（' + state.inbox.length + '）');
-        box.open = true;
+        const box = section(body, '待接收聊天（' + state.inbox.length + '）', true);
         const item = choose(box, '聊天', state.inbox, label);
         const card = choose(box, '保存到角色', state.cards, x => x);
         const advanced = section(box, '覆盖已有存档');
@@ -137,7 +129,7 @@ jQuery(() => {
         item.el.onchange = match; card.el.onchange = targets; match();
         action(box, '保存到酒馆', async () => {
             if (!card.value()) throw Error('请选择本机角色。');
-            const replace = advanced.open ? dest.value : '';
+            const replace = advanced.previousElementSibling.getAttribute('aria-expanded') === 'true' ? dest.value : '';
             if (replace && !confirm('请先关闭目标聊天。备份并覆盖 ' + replace + '？')) return;
             const result = await api('commit', { id: item.value().id, card: card.value(), replace, confirm: !!replace });
             await refresh(); return result;
@@ -214,6 +206,5 @@ jQuery(() => {
             const detail = section(setup, '查看连接详情'); detail.append(error.message);
         }
     }
-    panel.ontoggle = () => { if (panel.open) refresh(); };
+    onOpen(otherView, refresh);
 });
-

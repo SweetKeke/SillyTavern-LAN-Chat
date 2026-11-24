@@ -1,19 +1,22 @@
 import * as relay from './relay.mjs';
 
-export function mountRelay(panel) {
+import { drawer, menuButton, onOpen } from './native-ui.mjs';
+
+export function mountRelay(view) {
+    const panel = view.content;
     const ctx = () => SillyTavern.getContext();
     const prefix = 'st-chat-handoff-v2:';
     let config = JSON.parse(localStorage.getItem(prefix+'connection') || 'null');
     let waiting = [], busy = false;
-    const summary = document.createElement('summary');
+    const summary = view.title;
     const message = document.createElement('p');
     message.setAttribute('role','status');
     const controls = document.createElement('div');
-    controls.style.cssText='display:grid;gap:.5em;margin:.45em 0';
-    panel.append(summary,message,controls);
+    controls.className='flex-container flexFlowColumn';
+    panel.append(message,controls);
     function button(parent,label,fn) {
-        const el=document.createElement('button');
-        el.type='button'; el.className='menu_button'; el.style.width='auto'; el.textContent=label; parent.append(el);
+        const el=menuButton(label, fn === send ? 'fa-paper-plane' : fn === receive ? 'fa-comments' : fn === refresh ? 'fa-rotate' : undefined);
+        parent.append(el);
         el.onclick=async()=>{
             if(busy)return;
             busy=true;panel.setAttribute('aria-busy','true');el.disabled=true;
@@ -22,13 +25,12 @@ export function mountRelay(panel) {
         };
     }
     function group(title) {
-        const section=document.createElement('details'), heading=document.createElement('summary');
-        heading.textContent=title; section.append(heading); controls.append(section);return section;
+        return drawer(controls,title).content;
     }
     function input(box,title,secret=false) {
         const label=document.createElement('label'), el=document.createElement('input');
         el.type=secret?'password':'text'; el.autocomplete='off'; el.spellcheck=false;
-        el.className='text_pole';label.append(title,el);box.append(label);return el;
+        label.className='flex-container flexFlowColumn';el.className='text_pole';label.append(title,el);box.append(label);return el;
     }
     function persist(next) {
         localStorage.setItem(prefix+'connection',JSON.stringify(next));config=next;
@@ -119,8 +121,6 @@ export function mountRelay(panel) {
     }
     render();
     const check=async()=>{if(config && !busy){busy=true;try{await refresh();}catch(e){message.textContent=e.message;}finally{busy=false;}}};
-    panel.addEventListener('toggle',()=>{if(panel.open)check();});
+    onOpen(view,check);
     check();
 }
-
-
