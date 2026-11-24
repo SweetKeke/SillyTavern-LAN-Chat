@@ -2,7 +2,20 @@
 
 在 Windows 与 Android Termux 各自运行酒馆，通过同一 Wi-Fi 手动收发已保存的单角色 JSONL 聊天。无需云服务、插件账户或额外 npm 包。原始聊天内容和元数据随文件传输，外部图片、附件、角色卡和群聊不包含在内。
 
-## 两端安装
+## 通过 GitHub 安装（Windows 和 Termux 各做一次）
+
+1. 在酒馆根目录运行下列命令，安装服务端。已手动安装服务端的设备可跳过本步。
+
+   ```sh
+   git clone https://github.com/SweetKeke/SillyTavern-LAN-Chat.git plugins/lan-chat
+   ```
+
+2. 在 config.yaml 中设置 `enableServerPlugins: true`，重启酒馆。
+3. 打开「扩展 → 安装扩展」，粘贴 `https://github.com/SweetKeke/SillyTavern-LAN-Chat.git`，分支留空。刷新后展开「局域网聊天快传」。已手动安装前端的设备可沿用现有前端，避免出现两个面板。
+
+私有仓库需要安装端具备读取权限。如果酒馆提示克隆失败，可登录 GitHub 下载 ZIP，按下方手动方式安装。
+
+## 手动安装
 
 1. 退出酒馆，解压安装包。分别将包内的 `plugins/lan-chat` 和 `public/scripts/extensions/third-party/lan-chat` 复制到各自酒馆根目录下的相同位置。目标位置最终应有 `plugins/lan-chat/index.mjs` 与 `public/scripts/extensions/third-party/lan-chat/manifest.json`。Termux 请复制到实际执行 start.sh 的安装目录。
 2. 在两端现有 config.yaml 中设置 `enableServerPlugins: true`。保留其余配置。可继续使用酒馆原来的 localhost 地址。
@@ -31,4 +44,5 @@
 尚未在完整 ST 页面、Android Termux 真机、两台设备的 Wi-Fi 组播或防火墙环境中实测。Termux 的 Node/OpenSSL 需支持 PSK-AES256-GCM-SHA384。首次真机试用可用一份短聊天，在接收端新建后打开，检查首尾消息与分支。
 
 卸载时关闭酒馆，移除以上两个 lan-chat 目录和用户目录中的 lan-chat-devices.json。已导入的聊天和备份可按需保留。
+
 
