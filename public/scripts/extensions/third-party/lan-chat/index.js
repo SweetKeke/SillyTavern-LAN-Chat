@@ -1,10 +1,11 @@
 import { mountRelay } from './handoff.mjs';
-import { drawer, menuButton, onOpen } from './native-ui.mjs';
+import { disclosure, drawer, menuButton, onOpen } from './native-ui.mjs';
 
 jQuery(() => {
     const relayView = drawer(document.querySelector('#extensions_settings'), '聊天接力');
+    relayView.content.classList.add('st-chat-relay');
     mountRelay(relayView);
-    const otherView = drawer(relayView.content, '其他传输方式');
+    const otherView = disclosure(relayView.content, '其他传输方式');
     const panel = otherView.content;
     const status = document.createElement('p');
     status.setAttribute('role', 'status');
@@ -25,7 +26,7 @@ jQuery(() => {
         return result;
     }
     function section(parent, title, expanded = false) {
-        return drawer(parent, title, expanded).content;
+        return disclosure(parent, title, expanded).content;
     }
     function action(parent, title, run) {
         const button = menuButton(title);
@@ -208,3 +209,4 @@ jQuery(() => {
     }
     onOpen(otherView, refresh);
 });
+

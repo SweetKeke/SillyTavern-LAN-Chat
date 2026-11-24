@@ -27,7 +27,24 @@ export function drawer(parent, text, expanded = false) {
     return { root, title, header, content };
 }
 
+export function disclosure(parent, text, expanded = false) {
+    const root = document.createElement('details');
+    root.className = 'relay-secondary';
+    const header = document.createElement('summary');
+    header.textContent = text;
+    const content = document.createElement('div');
+    root.open = expanded;
+    header.setAttribute('aria-expanded', String(expanded));
+    root.addEventListener('toggle', () => header.setAttribute('aria-expanded', String(root.open)));
+    root.append(header, content);
+    parent.append(root);
+    return { root, header, content };
+}
 export function onOpen(view, fn) {
+    if (view.root.tagName === 'DETAILS') {
+        view.root.addEventListener('toggle', () => { if (view.root.open) fn(); });
+        return;
+    }
     jQuery(view.root).on('inline-drawer-toggle', e => {
         if (e.target === view.root && view.header.getAttribute('aria-expanded') === 'true') fn();
     });
@@ -48,4 +65,5 @@ export function menuButton(text, glyph) {
     el.append(label);
     return el;
 }
+
 

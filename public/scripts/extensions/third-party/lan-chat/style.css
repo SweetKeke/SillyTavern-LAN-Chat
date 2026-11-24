@@ -1,0 +1,13 @@
+.st-chat-relay { padding-inline: .65em; }
+.st-chat-relay .relay-device-switch { display: flex; align-self: flex-start; padding: 3px; gap: 3px; border: 1px solid var(--SmartThemeBorderColor); border-radius: 10px; }
+.st-chat-relay .relay-device-switch button { flex: 1; margin: 0; padding: .45em .9em; border: 0; background: transparent; box-shadow: none; opacity: .72; }
+.st-chat-relay .relay-device-switch [aria-pressed="true"] { background: color-mix(in srgb, var(--SmartThemeBodyColor) 13%, transparent); color: var(--SmartThemeBodyColor); box-shadow: inset 0 -2px var(--SmartThemeQuoteColor); opacity: 1; font-weight: bold; }
+.st-chat-relay .relay-device-form:not([hidden]) { display: grid; gap: .6em; padding-block: .5em; }
+.st-chat-relay .relay-device-form .text_pole { margin: .15em 0 0; width: 100%; }
+.st-chat-relay .relay-device-form a { font-size: .88em; justify-self: start; }
+.st-chat-relay .relay-device-form > button { justify-self: start; }
+.st-chat-relay .relay-secondary { padding: .45em 0; }
+.st-chat-relay > .relay-secondary { margin-top: .65em; border-top: 1px solid var(--SmartThemeBorderColor); }
+.st-chat-relay .relay-secondary > summary { cursor: pointer; font-size: .9em; opacity: .85; }
+.st-chat-relay .relay-secondary > div { padding: .45em 0; }
+

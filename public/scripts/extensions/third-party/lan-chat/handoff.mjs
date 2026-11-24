@@ -1,6 +1,6 @@
 import * as relay from './relay.mjs';
 
-import { drawer, menuButton, onOpen } from './native-ui.mjs';
+import { disclosure, menuButton, onOpen } from './native-ui.mjs';
 
 export function mountRelay(view) {
     const panel = view.content;
@@ -25,7 +25,7 @@ export function mountRelay(view) {
         };
     }
     function group(title) {
-        return drawer(controls,title).content;
+        return disclosure(controls,title).content;
     }
     function input(box,title,secret=false) {
         const label=document.createElement('label'), el=document.createElement('input');
@@ -37,17 +37,33 @@ export function mountRelay(view) {
     }
     function setup(){
         message.textContent='首次使用：在电脑连接一次，再把连接码复制到手机。';
-        const pc=group('我在电脑上 · 连接 GitHub');
+        const switcher=document.createElement('div');
+        switcher.className='relay-device-switch';
+        switcher.setAttribute('role','group');
+        switcher.setAttribute('aria-label','当前设备');
+        const pc=document.createElement('div'), phone=document.createElement('div');
+        pc.className=phone.className='relay-device-form';
+        function select(mobile) {
+            pc.hidden=mobile; phone.hidden=!mobile;
+            desktop.setAttribute('aria-pressed',String(!mobile));
+            handset.setAttribute('aria-pressed',String(mobile));
+            message.textContent=mobile?'粘贴电脑上生成的连接码，就能接收聊天。':'先连接你的 GitHub 仓库，再把连接码复制到手机。';
+        }
+        const desktop=menuButton('电脑','fa-desktop'), handset=menuButton('手机','fa-mobile-screen-button');
+        desktop.onclick=()=>select(false); handset.onclick=()=>select(true);
+        switcher.append(desktop,handset); controls.append(switcher,pc,phone);
+        select(/Android|iPhone|iPad/i.test(navigator.userAgent));
         const help=document.createElement('a');help.href='https://github.com/SweetKeke/SillyTavern-LAN-Chat#github-setup';
         help.target='_blank';help.rel='noopener';help.textContent='第一次连接怎么填？';pc.append(help);
-        const repo=input(pc,'自己的私有中转仓库（用户名/仓库名）'),token=input(pc,'只授权这个仓库的 GitHub 令牌',true);
+        const repo=input(pc,'私有仓库'),token=input(pc,'GitHub 令牌',true); repo.placeholder='用户名/仓库名'; token.placeholder='粘贴仓库访问令牌';
+        pc.append(help);
         button(pc,'连接电脑',async()=>{
             const next={repo:repo.value.trim(),token:token.value.trim(),key:relay.makeKey(),side:'pc'};
             next.release=await relay.prepare(next);persist(next);render();
             message.textContent='电脑已连接。展开「连接手机」，把连接码复制到手机。';
         });
-        const phone=group('我在手机上 · 输入连接码');
-        const code=input(phone,'电脑给你的连接码',true);
+
+        const code=input(phone,'连接码',true); code.placeholder='粘贴电脑给你的连接码';
         button(phone,'连接手机',async()=>{
             let data;try{data=JSON.parse(atob(code.value.trim()));}catch{throw Error('连接码不完整，请重新复制。');}
             const next={repo:data.repo,token:data.token,key:data.key,side:'phone'};
@@ -124,3 +140,4 @@ export function mountRelay(view) {
     onOpen(view,check);
     check();
 }
+
