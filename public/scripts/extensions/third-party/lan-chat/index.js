@@ -143,25 +143,72 @@ jQuery(() => {
             if (confirm('丢弃这份待接收聊天？')) { await api('discard', { id: item.value().id }); await refresh(); }
         });
     }
+    function activeChat() {
+        const c = context();
+        const character = c.characters[c.characterId];
+        if (c.groupId || !character?.avatar) throw Error('请先打开要收发聊天的角色，再点这里。');
+        return { c, character };
+    }
+    function fileTransfer(parent) {
+        action(parent, '把当前聊天存成文件', async () => {
+            const { c, character } = activeChat();
+            if (!c.chatId) throw Error('这个角色还没有已保存的聊天。');
+            const file = c.chatId + '.jsonl';
+            const res = await fetch('/api/chats/export', { method: 'POST', headers: c.getRequestHeaders(),
+                body: JSON.stringify({ avatar_url: character.avatar, file, exportfilename: file, format: 'jsonl', is_group: false }) });
+            if (!res.ok) throw Error('没有读到聊天。请等酒馆保存完，再试一次。');
+            const data = await res.json();
+            if (typeof data.result !== 'string' || !data.result.trim()) throw Error('这份存档没有可导出的内容。');
+            const url = URL.createObjectURL(new Blob([data.result], {type:'application/octet-stream'}));
+            const link = document.createElement('a');
+            link.href = url; link.download = file; document.body.append(link); link.click(); link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+            return {message:'下一步：把下载的 .jsonl 文件传到另一台设备，再在那边打开对应角色，点「导入收到的文件」。'};
+        });
+        const picker = document.createElement('input');
+        picker.type = 'file'; picker.accept = '.jsonl'; picker.hidden = true; parent.append(picker);
+        action(parent, '导入收到的文件', () => { activeChat(); picker.value = ''; picker.click(); });
+        picker.onchange = async () => {
+            const file = picker.files[0]; if (!file) return;
+            try {
+                const { c, character } = activeChat();
+                if (!confirm('把「' + file.name + '」保存为「' + character.name + '」的新聊天？')) return;
+                const form = new FormData();
+                form.append('avatar', file); form.append('file_type', 'jsonl');
+                form.append('avatar_url', character.avatar); form.append('character_name', character.name);
+                form.append('user_name', c.name1);
+                const res = await fetch('/api/chats/import', {method:'POST', headers:c.getRequestHeaders({omitContentType:true}), body:form});
+                if (!res.ok || !(await res.json()).res) throw Error('导入失败，请选择从酒馆导出的 .jsonl 聊天文件。');
+                status.textContent = '已保存。打开「' + character.name + '」的历史聊天，就能看到新存档。';
+            } catch (error) { status.textContent = error.message; }
+        };
+    }
     async function refresh() {
         const token = ++revision;
         try {
             const state = await api('status');
             if (token !== revision) return;
             body.replaceChildren();
-            status.textContent = state.devices.length ? '' : '首次使用，在一台设备生成邀请，在另一台粘贴。';
+            status.textContent = state.devices.length ? '直传 3/3 · 已配对，可以发送聊天。' : '直传 2/3 · 本机已准备好。下一步：连接另一台设备。';
             if (state.inbox.length) receive(state);
             if (state.devices.length) transfer(state); else pairing(body, state);
             action(body, state.devices.length ? '刷新收件箱' : '检查配对状态', refresh);
+            fileTransfer(section(body, '通过文件收发'));
         } catch (error) {
             if (token !== revision) return;
             body.replaceChildren();
-            status.textContent = error.message + '。请确认本机已安装快传服务端、启用服务端插件并重启酒馆。';
+            status.textContent = '面板已装好。现在可以用文件传聊天：打开一个角色，再选你要做的事。';
+            fileTransfer(body);
+            const setup = section(body, '想用 Wi-Fi 直接发？');
+            const hint = document.createElement('p');
+            hint.textContent = '直传 1/3 · 面板已装好，本机直传还没连上。下一步：按说明安装并开启本机直传服务，然后重启酒馆。';
+            setup.append(hint);
             const link = document.createElement('a');
             link.textContent = '查看安装步骤'; link.target = '_blank'; link.rel = 'noopener';
             link.href = 'https://github.com/SweetKeke/SillyTavern-LAN-Chat#readme';
-            body.append(link);
-            action(body, '重新检查', refresh);
+            setup.append(link);
+            action(setup, '我已重启，检查进度', refresh);
+            const detail = section(setup, '查看连接详情'); detail.append(error.message);
         }
     }
     panel.ontoggle = () => { if (panel.open) refresh(); };
