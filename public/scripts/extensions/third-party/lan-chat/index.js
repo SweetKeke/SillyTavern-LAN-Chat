@@ -1,7 +1,10 @@
+import { mountRelay } from './handoff.mjs';
 jQuery(() => {
     const panel = document.createElement('details');
-    panel.innerHTML = '<summary>局域网聊天快传</summary>';
-    document.querySelector('#extensions_settings').append(panel);
+    panel.innerHTML = '<summary>其他传输方式（局域网 / 文件）</summary>';
+    const relayPanel = document.createElement('details');
+    document.querySelector('#extensions_settings').append(relayPanel, panel);
+    mountRelay(relayPanel);
     const status = document.createElement('p');
     status.setAttribute('role', 'status');
     const body = document.createElement('div');
@@ -213,3 +216,4 @@ jQuery(() => {
     }
     panel.ontoggle = () => { if (panel.open) refresh(); };
 });
+

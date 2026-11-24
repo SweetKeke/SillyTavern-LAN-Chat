@@ -1,9 +1,9 @@
 {
-  "display_name": "局域网聊天快传",
+  "display_name": "聊天接力",
   "loading_order": 100,
   "requires": [],
   "optional": [],
   "js": "public/scripts/extensions/third-party/lan-chat/index.js",
   "author": "Codex",
-  "version": "1.0.0"
+  "version": "2.0.0"
 }
