@@ -1,0 +1,9 @@
+{
+  "display_name": "局域网聊天快传",
+  "loading_order": 100,
+  "requires": [],
+  "optional": [],
+  "js": "index.js",
+  "author": "Codex",
+  "version": "1.0.0"
+}
