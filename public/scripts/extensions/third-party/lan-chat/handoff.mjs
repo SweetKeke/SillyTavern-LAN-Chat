@@ -86,7 +86,15 @@ export function mountRelay(view) {
         message.textContent='已发出，可以关闭这台设备。另一台设备点「继续聊」即可。';
     }
     async function receive(){
-        const item=waiting[0]; if(!item)return refresh();
+        if (!waiting.length) {
+            message.textContent='正在检查对方发来的聊天…';
+            await refresh();
+            if (!waiting.length) {
+                message.textContent='还没有收到发给这台设备的聊天。对方显示「已发出」后，可以再点一次「继续聊」。';
+                return;
+            }
+        }
+        const item=waiting[0];
         const receiptKey=prefix+config.repo+':'+item.id;
         let saved=JSON.parse(localStorage.getItem(receiptKey)||'null');
         if(!saved){
@@ -117,9 +125,9 @@ export function mountRelay(view) {
         if(!config){setup();return;}
         const other=config.side==='pc'?'手机':'电脑';
         message.textContent=waiting.length?'收到 '+waiting.length+' 份聊天进度。':'已连接，可以发送当前聊天。';
-        if(waiting.length)button(controls,'继续聊',receive);
+        button(controls,'继续聊',receive);
         button(controls,'发到'+other,send);
-        button(controls,'检查新进度',refresh);
+
         if(config.side==='pc'){
             const box=group('连接手机');
             button(box,'显示连接码',()=>{
@@ -140,4 +148,5 @@ export function mountRelay(view) {
     onOpen(view,check);
     check();
 }
+
 

@@ -10,6 +10,7 @@ globalThis.fetch = async (url, options) => {
     const id = Number(endpoint.pathname.split('/').at(-1));
     if (options.method === 'POST') {
         const row = {...JSON.parse(options.body), id: ++nextId, created_at: new Date().toISOString()};
+        row.tag_name = 'untagged-' + row.id;
         db.set(row.id, row);
         return Response.json(row, {status:201});
     }
@@ -35,3 +36,4 @@ assert(db.size>0);
 await relay.remove(phone,item);
 assert.equal(db.size,0);
 console.log('PASS encrypted multipart handoff, direction, wrong key, download and cleanup (mock GitHub)');
+

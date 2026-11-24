@@ -62,8 +62,8 @@ export async function pending(config) {
     for(let page=1;;page++){
         const rows=await (await request(releases(config)+'?per_page=100&page='+page,config)).json();
         for(const row of rows){
-            const m=pattern.exec(row.tag_name);
-            if(!row.draft || !m || m[1]!==config.side || row.name!==row.tag_name)continue;
+            const m=pattern.exec(row.name);
+            if(!row.draft || !m || m[1]!==config.side)continue;
             const [, ,id,part,total]=m;
             if(!groups.has(id))groups.set(id,{id,parts:[],count:Number(total),created:row.created_at});
             groups.get(id).parts.push({number:Number(part),id:row.id});
@@ -90,4 +90,5 @@ export async function download(config,item) {
 export async function remove(config,item) {
     for(const part of [...item.parts].sort((a,b)=>a.number-b.number))await erase(config,part.id);
 }
+
 
