@@ -13,7 +13,7 @@
 2. 在 config.yaml 中设置 `enableServerPlugins: true`，重启酒馆。
 3. 打开「扩展 → 安装扩展」，粘贴 `https://github.com/SweetKeke/SillyTavern-LAN-Chat.git`，分支留空。刷新后展开「局域网聊天快传」。已手动安装前端的设备可沿用现有前端，避免出现两个面板。
 
-私有仓库需要安装端具备读取权限。如果酒馆提示克隆失败，可登录 GitHub 下载 ZIP，按下方手动方式安装。
+仓库已公开，可直接使用上面的安装链接。如果酒馆无法连接 GitHub，可下载 ZIP 按下方方式手动安装。
 
 ## 手动安装
 
