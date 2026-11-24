@@ -5,6 +5,9 @@
   "optional": [],
   "js": "index.js",
   "author": "Codex",
-  "version": "2.2.1",
-  "css": "style.css"
+  "version": "2.2.2",
+  "css": "style.css",
+  "hooks": {
+    "update": "promptAfterUpdate"
+  }
 }

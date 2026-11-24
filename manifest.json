@@ -5,6 +5,9 @@
   "optional": [],
   "js": "public/scripts/extensions/third-party/lan-chat/index.js",
   "author": "Codex",
-  "version": "2.2.1",
-  "css": "public/scripts/extensions/third-party/lan-chat/style.css"
+  "version": "2.2.2",
+  "css": "public/scripts/extensions/third-party/lan-chat/style.css",
+  "hooks": {
+    "update": "promptAfterUpdate"
+  }
 }

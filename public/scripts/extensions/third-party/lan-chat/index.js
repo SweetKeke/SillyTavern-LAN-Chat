@@ -210,3 +210,17 @@ jQuery(() => {
     onOpen(otherView, refresh);
 });
 
+
+let refreshPrompt = null;
+export function promptAfterUpdate() {
+    if (refreshPrompt) return;
+    const { Popup, POPUP_RESULT } = SillyTavern.getContext();
+    refreshPrompt = Popup.show.confirm('聊天接力已更新', '刷新酒馆页面即可使用新版。', {
+        okButton: '立即刷新',
+        cancelButton: '稍后刷新',
+        defaultResult: POPUP_RESULT.NEGATIVE,
+    }).then(choice => {
+        if (choice === POPUP_RESULT.AFFIRMATIVE) window.location.reload();
+    }).catch(error => console.error('聊天接力更新提示显示失败', error))
+      .finally(() => { refreshPrompt = null; });
+}
